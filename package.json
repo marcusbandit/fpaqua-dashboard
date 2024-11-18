@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@catppuccin/palette": "^1.7.1",
     "cli-progress": "^3.12.0",
     "csv-parser": "^3.0.0",
     "leaflet": "^1.9.4",

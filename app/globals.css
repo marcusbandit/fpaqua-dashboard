@@ -2,20 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Latte - Light Mode */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --base: #eff1f5;
+  --mantle: #e6e9ef;
+  --crust: #dce0e8;
+
+  --text: #4c4f69;
+  --subtext1: #5c5f77;
+  --subtext0: #6c6f85;
+
+  --overlay2: #7c7f93;
+  --overlay1: #8c8fa1;
+  --overlay0: #9ca0b0;
+
+  --surface2: #bcc0cc;
+  --surface1: #ccd0da;
+  --surface0: #dce0e8;
+
+  --blue: #1e66f5;
+  --lavender: #7287fd;
+  --sapphire: #4095d5;
+  --sky: #04a5e5;
+  --teal: #179299;
+  --green: #40a02b;
+  --yellow: #df8e1d;
+  --peach: #fe640b;
+  --maroon: #e64553;
+  --red: #d20f39;
+  --mauve: #8839ef;
+  --pink: #ea76cb;
+  --flamingo: #dd7878;
+  --rosewater: #dc8a78;
+
+
+  --radius: 8px;
+  --radius-large: 12px;
 }
 
+/* Frappe - Dark Mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --base: #303446;
+    --mantle: #292c3c;
+    --crust: #232634;
+
+    --text: #c6d0f5;
+    --subtext1: #b5bfe2;
+    --subtext0: #a5adce;
+
+    --overlay2: #949cbb;
+    --overlay1: #838ba7;
+    --overlay0: #737994;
+
+    --surface2: #626880;
+    --surface1: #51576d;
+    --surface0: #414559;
+
+    --blue: #8caaee;
+    --lavender: #babbf1;
+    --sapphire: #7eb3e6;
+    --sky: #81c8be;
+    --teal: #99d1db;
+    --green: #a6d189;
+    --yellow: #e5c890;
+    --peach: #ef9f76;
+    --maroon: #ea999c;
+    --red: #e78284;
+    --mauve: #ca9ee6;
+    --pink: #f4b8e4;
+    --flamingo: #eebebe;
+    --rosewater: #f2d5cf;
   }
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--text);
+  background: var(--base);
   font-family: Arial, Helvetica, sans-serif;
 }
