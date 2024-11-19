@@ -13,6 +13,7 @@
     "cli-progress": "^3.12.0",
     "csv-parser": "^3.0.0",
     "leaflet": "^1.9.4",
+    "motion": "^11.11.17",
     "next": "^14.2.17",
     "pigeon-maps": "^0.21.6",
     "react": "^18.2.0",

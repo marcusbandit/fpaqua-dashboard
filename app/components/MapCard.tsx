@@ -1,5 +1,6 @@
 import { Map, Marker, ZoomControl } from "pigeon-maps";
 import { useState } from "react";
+import LocationSidebar from "./LocationSidebar";
 
 interface Coordinate {
     lat: number;
@@ -17,23 +18,77 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates }) => {
     const [hoveredPinIndex, setHoveredPinIndex] = useState<number | null>(null);
 
     const handlePinClick = (coord: Coordinate) => {
-        setCenter([coord.lat, coord.lng]);
-        setZoom(12); // Adjust zoom level for a closer view
+        const targetCenter: [number, number] = [coord.lat, coord.lng];
+        const targetZoom = 12; // Desired zoom level
+        animateTo(targetCenter, targetZoom);
+    };
+
+    const animateTo = (targetCenter: [number, number], targetZoom: number, speed: number = 5) => {
+        let currentCenter = [...center];
+        let currentZoom = zoom;
+
+        const step = () => {
+            const dt = 1 / 60; // Assuming 60 FPS for smooth animation
+
+            // Update latitude and longitude
+            currentCenter[0] += (targetCenter[0] - currentCenter[0]) * (1.0 - Math.exp(-speed * dt));
+            currentCenter[1] += (targetCenter[1] - currentCenter[1]) * (1.0 - Math.exp(-speed * dt));
+
+            // Update zoom
+            currentZoom += (targetZoom - currentZoom) * (1.0 - Math.exp(-speed * dt));
+
+            // Apply new values to map
+            setCenter([...currentCenter]);
+            setZoom(currentZoom);
+
+            // Check stopping condition
+            const latDiff = Math.abs(targetCenter[0] - currentCenter[0]);
+            const lngDiff = Math.abs(targetCenter[1] - currentCenter[1]);
+            const zoomDiff = Math.abs(targetZoom - currentZoom);
+
+            const threshold = 0.00001; // Fine threshold for precision
+            if (latDiff > threshold || lngDiff > threshold || zoomDiff > 0.01) {
+                requestAnimationFrame(step);
+            } else {
+                // Snap to the target to ensure exact positioning
+                setCenter(targetCenter);
+                setZoom(targetZoom);
+            }
+        };
+
+        // Start the animation loop
+        requestAnimationFrame(step);
     };
 
     return (
-        <div style={{ flex: 1, backgroundColor: "var(--surface0)", padding: "1rem", borderRadius: "var(--radius)", overflow: "hidden" }}>
-            <h2>Map</h2>
-            <div style={{ borderRadius: "var(--radius)", overflow: "hidden", height: "500px" }}>
+        <div
+            style={{
+                display: "flex",
+                flex: 1,
+                flexDirection: "row",
+                backgroundColor: "var(--surface0)",
+                padding: "1rem",
+                borderRadius: "var(--radius)",
+                overflow: "hidden",
+            }}
+        >
+            <div
+                style={{
+                    flex: 3,
+                    borderRadius: "var(--radius)",
+                    overflow: "hidden",
+                    height: "500px",
+                }}
+            >
                 <Map
                     center={center}
                     zoom={zoom}
-                    anim={true} // Enable smooth animation
+                    anim={false} // Enable smooth animation
                     onBoundsChanged={({ center, zoom }) => {
                         setCenter(center);
                         setZoom(zoom);
                     }}
-                    style={{ height: '100%' }}
+                    style={{ height: "100%" }}
                 >
                     <ZoomControl />
                     {coordinates.map((coord, index) => (
@@ -47,7 +102,10 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates }) => {
                                 onMouseEnter={() => setHoveredPinIndex(index)}
                                 onMouseLeave={() => setHoveredPinIndex(null)}
                                 style={{
-                                    position: "absolute",
+                                    position: "relative",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
                                     width: "30px",
                                     height: "30px",
                                     pointerEvents: "auto",
@@ -71,15 +129,14 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates }) => {
                                     <div
                                         style={{
                                             position: "absolute",
-                                            bottom: "40px",
-                                            left: "50%",
-                                            transform: "translateX(-50%)",
+                                            bottom: "40px", // Adjusted to appear above the pin
                                             backgroundColor: "var(--surface1)",
                                             padding: "5px 10px",
                                             borderRadius: "4px",
                                             boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
                                             fontSize: "12px",
                                             whiteSpace: "nowrap",
+                                            zIndex: 9999, // Ensure it's on top of everything else
                                         }}
                                     >
                                         {coord.name || `${coord.lat}, ${coord.lng}`}
@@ -90,6 +147,7 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates }) => {
                     ))}
                 </Map>
             </div>
+            <LocationSidebar coordinates={coordinates} onLocationClick={handlePinClick} />
         </div>
     );
 };
