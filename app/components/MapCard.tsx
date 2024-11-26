@@ -91,7 +91,7 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates }) => {
                     style={{ height: "100%" }}
                 >
                     <ZoomControl />
-                    {coordinates.map((coord, index) => (
+                    {coordinates.slice().reverse().map((coord, index) => (
                         <Marker
                             key={index}
                             anchor={[coord.lat, coord.lng]} // Position directly on the map coordinates

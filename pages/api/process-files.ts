@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { NextApiRequest, NextApiResponse } from 'next';
 import csv from 'csv-parser';
+import { a } from 'motion/react-client';
 
 const baseDirectory = '/mnt/deepsea1/FPAQUA/yolo_output/';
 const outputDirectory = '/home/marc/projectdata/fpaqua/dashboard/data/';
@@ -61,13 +62,13 @@ async function processFile(filePath: string) {
     fs.createReadStream(filePath)
         .pipe(csv())
         .on('data', (row) => {
-            if (!row.latitude || !row.longitude || !row.date || !row.prediction_category || !row.amount) {
+            if (!row.image_path || !row.latitude || !row.longitude || !row.prediction_category || !row.amount) {
                 logMissingColumns(filePath);
                 return;
             }
-
-            const { latitude, longitude, date, prediction_category, amount } = row;
-            const locationFolder = `${latitude}_${longitude}`;
+            const { sensor, date, time, name }  = extractFromImagepath(row.image_path);
+            const { latitude, longitude, prediction_category, amount } = row;
+            const locationFolder = `${latitude}_${longitude}_${sensor}`;
             const dateFile = path.join(outputDirectory, locationFolder, 'data', `${date}.csv`);
 
             if (!records[dateFile]) {
@@ -85,6 +86,27 @@ async function processFile(filePath: string) {
         });
 }
 
+function extractFromImagepath(filepath: string) {
+    const parts = filepath.split('/');
+    const filename = parts[parts.length - 1];
+    const filenameParts = filename.split('_');
+
+    const sensor = filenameParts[0];
+
+    const dateRegex = /\d{8}T\d{6}Z/;
+    const datetimeIndex = filenameParts.findIndex(part => dateRegex.test(part));
+    if (datetimeIndex === -1) {
+        throw new Error('Date and time not found in filename');
+    }
+    const datetime = filenameParts[datetimeIndex];
+    const [datePart, timePart] = datetime.split('T');
+    const date = `${datePart.slice(0, 4)}-${datePart.slice(4, 6)}-${datePart.slice(6, 8)}`;
+    const time = `${timePart.slice(0, 2)}:${timePart.slice(2, 4)}`;
+    const name = filenameParts.slice(1, datetimeIndex).join('_');
+
+    return { sensor, date, time, name };
+}
+
 async function logMissingColumns(filePath: string) {
     const logPath = path.join(logDirectory, 'missing_columns.log');
     const relativePath = filePath.replace(baseDirectory, '');
@@ -92,7 +114,6 @@ async function logMissingColumns(filePath: string) {
     await fs.promises.appendFile(logPath, `${relativePath}\n`);
     console.warn(`Logged missing columns for file: ${filePath}`);
 }
-
 async function writeRecords(records: { [dateFile: string]: { prediction_category: string; amount: number }[] }) {
     for (const [dateFile, entries] of Object.entries(records)) {
         await ensureDirectoryExists(path.dirname(dateFile));
