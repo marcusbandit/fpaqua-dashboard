@@ -1,8 +1,5 @@
-interface Coordinate {
-    lat: number;
-    lng: number;
-    name: string;
-}
+import { Coordinate } from "../types";
+
 
 interface SidebarProps {
     coordinates: Coordinate[];

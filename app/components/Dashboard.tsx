@@ -1,59 +1,37 @@
 import { motion } from "motion/react";
+import { useState } from "react";
 import MapCard from "./MapCard";
 import GraphCard from "./GraphCard";
 import useCoordinates from "../hooks/useCoordinates";
+import { Coordinate, GraphDataPoint } from "../types";
+
+export async function fetchLocalDataForCoordinates(coord: Coordinate): Promise<GraphDataPoint[]> {
+    try {
+        const date = new Date().toISOString().split('T')[0]; // Use current date or pass from UI
+        const response = await fetch(`/api/get-data?lat=${coord.lat}&lng=${coord.lng}`);
+        
+        if (!response.ok) {
+            console.error('Error fetching data from API:', response.statusText);
+            return [];
+        }
+
+        const data = await response.json();
+        return data; // Parsed data from the API
+    } catch (error) {
+        console.error('Error in fetchLocalDataForCoordinates:', error);
+        return [];
+    }
+}
 
 const Dashboard = () => {
     const { coordinates, isProcessing, startPreprocessing } = useCoordinates();
+    const [graphData, setGraphData] = useState<GraphDataPoint[]>([]);
 
-    // Example data for GraphCard
-    const sampleData = [
-        { date: "2023-01-01", category: "Crustacean", count: 10 },
-        { date: "2023-01-01", category: "Mammal", count: 20 },
-        { date: "2023-01-01", category: "Fungi", count: 57 },
-        { date: "2023-01-01", category: "Coral", count: 9 },
-        { date: "2023-01-01", category: "Reptile", count: 99 },
-        { date: "2023-01-01", category: "Bird", count: 30 },
-        { date: "2023-01-01", category: "Insect", count: 54 },
-        { date: "2023-01-01", category: "Amphibian", count: 77 },
-        { date: "2023-01-01", category: "Fish", count: 51 },
-        { date: "2023-01-01", category: "Plant", count: 18 },
-        { date: "2023-01-02", category: "Bird", count: 86 },
-        { date: "2023-01-02", category: "Amphibian", count: 63 },
-        { date: "2023-01-02", category: "Plant", count: 65 },
-        { date: "2023-01-02", category: "Reptile", count: 83 },
-        { date: "2023-01-02", category: "Fish", count: 80 },
-        { date: "2023-01-02", category: "Insect", count: 34 },
-        { date: "2023-01-02", category: "Mammal", count: 81 },
-        { date: "2023-01-02", category: "Fungi", count: 49 },
-        { date: "2023-01-02", category: "Crustacean", count: 52 },
-        { date: "2023-01-02", category: "Coral", count: 72 },
-        { date: "2023-01-03", category: "Fish", count: 64 },
-        { date: "2023-01-03", category: "Bird", count: 23 },
-        { date: "2023-01-03", category: "Reptile", count: 51 },
-        { date: "2023-01-03", category: "Amphibian", count: 99 },
-        { date: "2023-01-03", category: "Mammal", count: 43 },
-        { date: "2023-01-03", category: "Insect", count: 80 },
-        { date: "2023-01-03", category: "Fungi", count: 28 },
-        { date: "2023-01-03", category: "Crustacean", count: 40 },
-        { date: "2023-01-03", category: "Plant", count: 37 },
-        { date: "2023-01-03", category: "Coral", count: 68 },
-        { date: "2023-01-04", category: "Bird", count: 50 },
-        { date: "2023-01-04", category: "Insect", count: 47 },
-        { date: "2023-01-04", category: "Mammal", count: 57 },
-        { date: "2023-01-04", category: "Fungi", count: 94 },
-        { date: "2023-01-04", category: "Fish", count: 69 },
-        { date: "2023-01-04", category: "Reptile", count: 62 },
-        { date: "2023-01-04", category: "Amphibian", count: 84 },
-        { date: "2023-01-04", category: "Coral", count: 72 },
-        { date: "2023-01-04", category: "Plant", count: 62 },
-        { date: "2023-01-04", category: "Crustacean", count: 49 }
-        // Continue to January 5th through 10th...
-    ];
-    
-    
-    
-
+    const handlePinClick = async (coord: Coordinate) => {
+        console.log("Fetching data for:", coord);
+        const fetchedData = await fetchLocalDataForCoordinates(coord);
+        setGraphData(fetchedData);
+    }
     return (
         <div style={{ padding: "1rem", backgroundColor: "var(--background)" }}>
             <motion.div
@@ -89,13 +67,14 @@ const Dashboard = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 style={{
-                    display: "grid",
+                    display: "flex",
+                    flexDirection: "column",
                     gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
                     gap: "1rem",
                 }}
             >
-                <MapCard coordinates={coordinates} />
-                <GraphCard data={sampleData} />
+                <GraphCard data={graphData} />
+                <MapCard coordinates={coordinates} onPinClick={handlePinClick}/>
             </motion.div>
         </div>
     );

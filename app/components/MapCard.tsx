@@ -1,26 +1,23 @@
 import { Map, Marker, ZoomControl } from "pigeon-maps";
 import { useState } from "react";
 import LocationSidebar from "./LocationSidebar";
-
-interface Coordinate {
-    lat: number;
-    lng: number;
-    name?: string; // Name is optional
-}
+import { Coordinate } from "../types";
 
 interface MapCardProps {
     coordinates: Coordinate[]; // Array of coordinates for the map
+    onPinClick: (coord: Coordinate) => void;
 }
 
-const MapCard: React.FC<MapCardProps> = ({ coordinates }) => {
+const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
     const [center, setCenter] = useState<[number, number]>(coordinates.length > 0 ? [coordinates[0].lat, coordinates[0].lng] : [0, 0]);
     const [zoom, setZoom] = useState<number>(coordinates.length === 1 ? 10 : 5);
     const [hoveredPinIndex, setHoveredPinIndex] = useState<number | null>(null);
 
     const handlePinClick = (coord: Coordinate) => {
         const targetCenter: [number, number] = [coord.lat, coord.lng];
-        const targetZoom = 12; // Desired zoom level
+        const targetZoom = 5; // Desired zoom level
         animateTo(targetCenter, targetZoom);
+        onPinClick(coord);
     };
 
     const animateTo = (targetCenter: [number, number], targetZoom: number, speed: number = 5) => {
@@ -38,7 +35,7 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates }) => {
             currentZoom += (targetZoom - currentZoom) * (1.0 - Math.exp(-speed * dt));
 
             // Apply new values to map
-            setCenter([...currentCenter]);
+            setCenter([currentCenter[0], currentCenter[1]]);
             setZoom(currentZoom);
 
             // Check stopping condition
@@ -65,30 +62,29 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates }) => {
             style={{
                 display: "flex",
                 flex: 1,
-                flexDirection: "row",
+                flexDirection: "column",
                 backgroundColor: "var(--surface0)",
                 padding: "1rem",
                 borderRadius: "var(--radius)",
                 overflow: "hidden",
+                maxWidth: "30rem",
             }}
         >
             <div
                 style={{
-                    flex: 3,
                     borderRadius: "var(--radius)",
                     overflow: "hidden",
-                    height: "500px",
+                    width: "100%",
+                    aspectRatio: "1 / 1",
                 }}
             >
                 <Map
                     center={center}
                     zoom={zoom}
-                    anim={false} // Enable smooth animation
                     onBoundsChanged={({ center, zoom }) => {
                         setCenter(center);
                         setZoom(zoom);
                     }}
-                    style={{ height: "100%" }}
                 >
                     <ZoomControl />
                     {coordinates.slice().reverse().map((coord, index) => (

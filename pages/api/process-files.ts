@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import { NextApiRequest, NextApiResponse } from 'next';
 import csv from 'csv-parser';
-import { a } from 'motion/react-client';
 
 const baseDirectory = '/mnt/deepsea1/FPAQUA/yolo_output/';
 const outputDirectory = '/home/marc/projectdata/fpaqua/dashboard/data/';
@@ -63,7 +62,14 @@ async function processFile(filePath: string) {
         .pipe(csv())
         .on('data', (row) => {
             if (!row.image_path || !row.latitude || !row.longitude || !row.prediction_category || !row.amount) {
-                logMissingColumns(filePath);
+                // Log missing columns
+                const missingRows: string[] = [];
+                if (!row.image_path) missingRows.push('image_path');
+                if (!row.latitude) missingRows.push('latitude');
+                if (!row.longitude) missingRows.push('longitude');
+                if (!row.prediction_category) missingRows.push('prediction_category');
+                if (!row.amount) missingRows.push('amount');
+                logMissingColumns(filePath, missingRows);
                 return;
             }
             const { sensor, date, time, name }  = extractFromImagepath(row.image_path);
@@ -107,7 +113,7 @@ function extractFromImagepath(filepath: string) {
     return { sensor, date, time, name };
 }
 
-async function logMissingColumns(filePath: string) {
+async function logMissingColumns(filePath: string, missingColumns: string[]) {
     const logPath = path.join(logDirectory, 'missing_columns.log');
     const relativePath = filePath.replace(baseDirectory, '');
     await ensureDirectoryExists(logDirectory);

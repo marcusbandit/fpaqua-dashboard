@@ -9,9 +9,11 @@ const useCoordinates = () => {
         try {
             const response = await fetch('/api/get-coordinates');
             const data = await response.json();
+            console.log(data);
             const parsedData = data.map((folder: string) => {
                 const [lat, lng] = folder.split('_').map(coord => parseFloat(coord.replace(',', '.')));
-                return { lat, lng, name: `Location: ${lat}, ${lng}` };
+                const name = folder.split('_')[2];
+                return { lat, lng, name };
             });
             console.log('Fetched coordinates:', parsedData);
             setCoordinates(parsedData);

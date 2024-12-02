@@ -11,6 +11,7 @@
   "dependencies": {
     "@catppuccin/palette": "^1.7.1",
     "cli-progress": "^3.12.0",
+    "csv-parse": "^5.6.0",
     "csv-parser": "^3.0.0",
     "echarts": "^5.5.1",
     "echarts-for-react": "^3.0.2",
@@ -21,10 +22,12 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",
+    "react-switch": "^7.0.0",
     "seedrandom": "^3.0.5"
   },
   "devDependencies": {
     "@types/cli-progress": "^3.11.6",
+    "@types/csv-parse": "^1.2.5",
     "@types/leaflet": "^1.9.14",
     "@types/node": "^20",
     "@types/react": "^18",
