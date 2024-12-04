@@ -73,8 +73,8 @@ const Dashboard = () => {
                     gap: "1rem",
                 }}
             >
-                <GraphCard data={graphData} />
                 <MapCard coordinates={coordinates} onPinClick={handlePinClick}/>
+                <GraphCard data={graphData} />
             </motion.div>
         </div>
     );

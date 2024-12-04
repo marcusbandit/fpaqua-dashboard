@@ -8,8 +8,8 @@ interface SidebarProps {
 
 const LocationSidebar: React.FC<SidebarProps> = ({ coordinates, onLocationClick }) => {
     return (
-        <div style={{ flex: "1", width: "300px", backgroundColor: "var(--surface0)", padding: "1rem", paddingRight: "0rem", borderRadius: "8px" }}>
-            <h2>Locations</h2>
+        <div style={{ flex: "1", width: "300px", minWidth: "300px", backgroundColor: "var(--surface0)", padding: "1rem", paddingRight: "0rem", borderRadius: "8px" }}>
+            <h2 style={{ marginBottom: "1rem", fontSize: "1.5rem", fontWeight: "bold" }}>Locations:</h2>
             <ul style={{ listStyle: "none", padding: 0 }}>
                 {coordinates.map((coord, index) => (
                     <li
@@ -21,15 +21,16 @@ const LocationSidebar: React.FC<SidebarProps> = ({ coordinates, onLocationClick 
                             borderRadius: "4px",
                             marginBottom: "0.5rem",
                             transition: "background-color 0.3s ease, transform 0.2s ease",
+                            maxWidth: "300px",
                         }}
                         onClick={() => onLocationClick(coord)} // Trigger callback on click
                         onMouseEnter={(e) => {
                             (e.target as HTMLElement).style.backgroundColor = "var(--surface2)";
-                            (e.target as HTMLElement).style.transform = "scale(1.05)";
+                            (e.target as HTMLElement).style.transform =  "translateX(10px)";
                         }}
                         onMouseLeave={(e) => {
                             (e.target as HTMLElement).style.backgroundColor = "var(--surface1)";
-                            (e.target as HTMLElement).style.transform = "scale(1)";
+                            (e.target as HTMLElement).style.transform = "translateX(0)";
                         }}
                     >
                         {coord.name}

@@ -105,8 +105,8 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
                     borderRadius: "var(--radius)",
                     overflow: "hidden",
                     width: "100%",
-                    maxWidth: "30rem",
-                    aspectRatio: "1 / 1",
+                    // maxWidth: "30rem",
+                    // aspectRatio: "1 / 1",
                 }}
             >
                 <Map
