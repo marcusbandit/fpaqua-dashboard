@@ -1,5 +1,5 @@
 import { Map, Marker, ZoomControl } from "pigeon-maps";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import LocationSidebar from "./LocationSidebar";
 import { Coordinate } from "../types";
 
@@ -12,16 +12,46 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
     const [center, setCenter] = useState<[number, number]>(coordinates.length > 0 ? [coordinates[0].lat, coordinates[0].lng] : [0, 0]);
     const [zoom, setZoom] = useState<number>(coordinates.length === 1 ? 10 : 5);
     const [hoveredPinIndex, setHoveredPinIndex] = useState<number | null>(null);
+    const [selectedPinIndex, setSelectedPinIndex] = useState<number | null>(0);
+    const animationRef = useRef<number | null>(null);
+
+    const stopAnimation = () => {
+        if (animationRef.current !== null) {
+            cancelAnimationFrame(animationRef.current);
+            animationRef.current = null;
+        }
+    };
 
     const handlePinClick = (coord: Coordinate) => {
         const targetCenter: [number, number] = [coord.lat, coord.lng];
         const targetZoom = 5; // Desired zoom level
-        animateTo(targetCenter, targetZoom);
+
+        // Select the pin
+        const selectedIndex = coordinates.slice().reverse().findIndex(c => c.lat === coord.lat && c.lng === coord.lng);
+        setSelectedPinIndex(selectedIndex);
+
+        // Check distance from current center to target center
+        const distanceThreshold = 5; // Define threshold for snapping
+        const distance = Math.sqrt(
+            Math.pow(targetCenter[0] - center[0], 2) + Math.pow(targetCenter[1] - center[1], 2)
+        );
+
+        if (distance > distanceThreshold) {
+            // Snap to target position and reset animation state
+            setCenter(targetCenter);
+            setZoom(3); // Initial zoom before animation
+            setTimeout(() => animateTo(targetCenter, targetZoom), 0);
+        } else {
+            animateTo(targetCenter, targetZoom);
+        }
+
         onPinClick(coord);
     };
 
     const animateTo = (targetCenter: [number, number], targetZoom: number, speed: number = 5) => {
-        let currentCenter = [...center];
+        stopAnimation();
+
+        let currentCenter: [number, number] = [...targetCenter];
         let currentZoom = zoom;
 
         const step = () => {
@@ -45,16 +75,17 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
 
             const threshold = 0.00001; // Fine threshold for precision
             if (latDiff > threshold || lngDiff > threshold || zoomDiff > 0.01) {
-                requestAnimationFrame(step);
+                animationRef.current = requestAnimationFrame(step);
             } else {
                 // Snap to the target to ensure exact positioning
                 setCenter(targetCenter);
                 setZoom(targetZoom);
+                animationRef.current = null;
             }
         };
 
         // Start the animation loop
-        requestAnimationFrame(step);
+        animationRef.current = requestAnimationFrame(step);
     };
 
     return (
@@ -62,12 +93,11 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
             style={{
                 display: "flex",
                 flex: 1,
-                flexDirection: "column",
+                flexDirection: "row",
                 backgroundColor: "var(--surface0)",
                 padding: "1rem",
                 borderRadius: "var(--radius)",
                 overflow: "hidden",
-                maxWidth: "30rem",
             }}
         >
             <div
@@ -75,6 +105,7 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
                     borderRadius: "var(--radius)",
                     overflow: "hidden",
                     width: "100%",
+                    maxWidth: "30rem",
                     aspectRatio: "1 / 1",
                 }}
             >
@@ -82,12 +113,13 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
                     center={center}
                     zoom={zoom}
                     onBoundsChanged={({ center, zoom }) => {
+                        stopAnimation(); // Stop animation when the map is dragged
                         setCenter(center);
                         setZoom(zoom);
                     }}
                 >
                     <ZoomControl />
-                    {coordinates.slice().reverse().map((coord, index) => (
+                    {coordinates.slice().reverse().map((coord: Coordinate, index: number) => (
                         <Marker
                             key={index}
                             anchor={[coord.lat, coord.lng]} // Position directly on the map coordinates
@@ -105,7 +137,7 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
                                     width: "30px",
                                     height: "30px",
                                     pointerEvents: "auto",
-                                    transform: hoveredPinIndex === index ? "scale(1.25)" : "scale(1)",
+                                    transform: hoveredPinIndex === index || selectedPinIndex === index ? "scale(1.25)" : "scale(1)",
                                     transformOrigin: "bottom center",
                                     transition: "transform 0.2s ease",
                                     cursor: "pointer",
@@ -121,7 +153,7 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
                                     }}
                                 />
                                 {/* Hover Label */}
-                                {hoveredPinIndex === index && (
+                                {(hoveredPinIndex === index || selectedPinIndex === index) && (
                                     <div
                                         style={{
                                             position: "absolute",
@@ -143,7 +175,7 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
                     ))}
                 </Map>
             </div>
-            <LocationSidebar coordinates={coordinates} onLocationClick={handlePinClick} />
+            <LocationSidebar coordinates={coordinates} onLocationClick={(coord: Coordinate) => handlePinClick(coord)} />
         </div>
     );
 };

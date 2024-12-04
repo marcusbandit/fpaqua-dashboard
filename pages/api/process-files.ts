@@ -74,7 +74,7 @@ async function processFile(filePath: string) {
             }
             const { sensor, date, time, name }  = extractFromImagepath(row.image_path);
             const { latitude, longitude, prediction_category, amount } = row;
-            const locationFolder = `${latitude}_${longitude}_${sensor}`;
+            const locationFolder = `${latitude}_${longitude}_${name}`;
             const dateFile = path.join(outputDirectory, locationFolder, 'data', `${date}.csv`);
 
             if (!records[dateFile]) {
@@ -108,7 +108,7 @@ function extractFromImagepath(filepath: string) {
     const [datePart, timePart] = datetime.split('T');
     const date = `${datePart.slice(0, 4)}-${datePart.slice(4, 6)}-${datePart.slice(6, 8)}`;
     const time = `${timePart.slice(0, 2)}:${timePart.slice(2, 4)}`;
-    const name = filenameParts.slice(1, datetimeIndex).join('_');
+    const name = filenameParts.slice(1, datetimeIndex).join('-');
 
     return { sensor, date, time, name };
 }
