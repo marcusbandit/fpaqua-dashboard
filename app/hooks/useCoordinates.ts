@@ -12,7 +12,7 @@ const useCoordinates = () => {
             console.log(data);
             const parsedData = data.map((folder: string) => {
                 const [lat, lng] = folder.split('_').map(coord => parseFloat(coord.replace(',', '.')));
-                const name = folder.split('_')[2];
+                const name = folder.split('_')[3];
                 return { lat, lng, name };
             });
             console.log('Fetched coordinates:', parsedData);

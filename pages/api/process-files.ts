@@ -55,7 +55,7 @@ async function processDirectory(dir: string) {
 }
 
 async function processFile(filePath: string) {
-    console.log(`Processing file: ${filePath}`);
+    //console.log(`Processing file: ${filePath}`);
     const records: { [dateFile: string]: { prediction_category: string; amount: number }[] } = {};
 
     fs.createReadStream(filePath)
@@ -69,12 +69,12 @@ async function processFile(filePath: string) {
                 if (!row.longitude) missingRows.push('longitude');
                 if (!row.prediction_category) missingRows.push('prediction_category');
                 if (!row.amount) missingRows.push('amount');
-                logMissingColumns(filePath, missingRows);
+                //logMissingColumns(filePath, missingRows);
                 return;
             }
             const { sensor, date, time, name }  = extractFromImagepath(row.image_path);
             const { latitude, longitude, prediction_category, amount } = row;
-            const locationFolder = `${latitude}_${longitude}_${name}`;
+            const locationFolder = `${latitude}_${longitude}_${sensor}_${name}`;
             const dateFile = path.join(outputDirectory, locationFolder, 'data', `${date}.csv`);
 
             if (!records[dateFile]) {
@@ -88,7 +88,7 @@ async function processFile(filePath: string) {
         })
         .on('end', async () => {
             await writeRecords(records);
-            console.log(`Completed processing of: ${filePath}`);
+            //console.log(`Completed processing of: ${filePath}`);
         });
 }
 

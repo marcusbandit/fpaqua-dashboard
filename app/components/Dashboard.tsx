@@ -4,6 +4,7 @@ import MapCard from "./MapCard";
 import GraphCard from "./GraphCard";
 import useCoordinates from "../hooks/useCoordinates";
 import { Coordinate, GraphDataPoint } from "../types";
+import BioGraphCard from "./BioGraphCard";
 
 export async function fetchLocalDataForCoordinates(coord: Coordinate): Promise<GraphDataPoint[]> {
     try {
@@ -34,7 +35,7 @@ const Dashboard = () => {
     }
     return (
         <div style={{ padding: "1rem", backgroundColor: "var(--background)" }}>
-            <motion.div
+            {/* <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
@@ -60,7 +61,7 @@ const Dashboard = () => {
                 >
                     {isProcessing ? "Processing..." : "Check for Missing Data"}
                 </button>
-            </motion.div>
+            </motion.div> */}
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -75,6 +76,7 @@ const Dashboard = () => {
             >
                 <MapCard coordinates={coordinates} onPinClick={handlePinClick}/>
                 <GraphCard data={graphData} />
+                <BioGraphCard data={graphData} />
             </motion.div>
         </div>
     );
