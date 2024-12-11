@@ -7,7 +7,7 @@ const useCoordinates = () => {
     // Fetch initial coordinates
     const fetchCoordinates = async () => {
         try {
-            const response = await fetch('/api/get-coordinates');
+            const response = await fetch('/api/get-sensors');
             const data = await response.json();
             console.log(data);
             const parsedData = data.map((folder: string) => {

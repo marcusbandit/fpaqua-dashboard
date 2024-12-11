@@ -45,19 +45,19 @@ const BioGraphCard: React.FC<GraphCardProps> = ({ data }) => {
             formatter: (params: any) => {
                 if (!Array.isArray(params)) return "";
                 const { name, value } = params[0]; // Use the first series for tooltip
-                return `Date: ${name}<br>Category Count: ${Math.round(value[0])}<br>Amount Sum: ${Math.round(value[1])}`;
+                return `Date: ${name}<br>Species Richness: ${Math.round(value[0])}<br>Species Abundance: ${Math.round(value[1])}`;
             },
         },
         xAxis: {
             type: "value",
-            name: "Category Count",
+            name: "Species Richness",
             nameLocation: "middle",
             nameTextStyle: { color: resolveCssVariable("--text"), fontSize: 14, padding: 20 },
             axisLabel: { textStyle: { color: resolveCssVariable("--text") } },
         },
         yAxis: {
             type: "value",
-            name: "Amount Sum",
+            name: "Species Abundance",
             nameLocation: "middle",
             nameTextStyle: { color: resolveCssVariable("--text"), fontSize: 14, padding: 40 },
             axisLabel: { textStyle: { color: resolveCssVariable("--text") } },
@@ -98,6 +98,8 @@ const BioGraphCard: React.FC<GraphCardProps> = ({ data }) => {
                 overflow: "hidden",
                 aspectRatio: "1/1",
                 maxWidth: "30rem",
+                minWidth: "30rem",
+                flex: "1",
             }}
         >
             <ReactECharts option={chartOptions} style={{ height: "100%", width: "100%" }} />

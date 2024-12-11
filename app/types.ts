@@ -1,8 +1,9 @@
 // Define in MapCard or a shared types file (e.g., app/types.ts)
 export interface Coordinate {
+    sensor: string;
     lat: number;
     lng: number;
-    name?: string;
+    name: string;
 }
 
 export interface GraphDataPoint {

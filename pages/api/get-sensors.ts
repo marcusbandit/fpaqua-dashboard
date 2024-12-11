@@ -8,10 +8,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         const folderNames = fs.readdirSync(DATA_PATH).filter((folder) => {
             // Ensure it's not a system file like .DS_Store
-            return !folder.startsWith('.') && folder.includes('_');
+            return !folder.startsWith('.') && folder.includes('titan');
         });
 
-        console.log('Coordinates found in data folders:', folderNames);
+        console.log('Found folders for the sensors:', folderNames);
 
         res.status(200).json(folderNames);
     } catch (err) {

@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Step 1: Find the matching folder
         const folders = fs.readdirSync(DATA_PATH).filter((folder) => {
-            return !folder.startsWith('.') && folder.includes('_');
+            return !folder.startsWith('.') && folder.includes('titan');
         });
 
         const targetFolder = folders.find((folder) => {
