@@ -6,6 +6,7 @@ import useCoordinates from "../hooks/useCoordinates";
 import { Coordinate, GraphDataPoint } from "../types";
 import BioGraphCard from "./BioGraphCard";
 import ShannonGraphCard from "./ShannonGraphCard";
+import GraphCardSidebar from "./GraphCardSidebar";
 
 export async function fetchLocalDataForCoordinates(coord: Coordinate): Promise<GraphDataPoint[]> {
     try {
@@ -29,40 +30,16 @@ const Dashboard = () => {
     const { coordinates, isProcessing, startPreprocessing } = useCoordinates();
     const [graphData, setGraphData] = useState<GraphDataPoint[]>([]);
 
+    const sensor = "titan001"; // Example sensor value
+    const [hoveredDate, setHoveredDate] = useState<string | null>(null);
+
     const handlePinClick = async (coord: Coordinate) => {
         console.log("Fetching data for:", coord);
         const fetchedData = await fetchLocalDataForCoordinates(coord);
         setGraphData(fetchedData);
-    };
+    };    
     return (
         <div style={{ padding: "1rem", backgroundColor: "var(--background)" }}>
-            {/* <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                style={{
-                    marginBottom: "1rem",
-                    textAlign: "center",
-                }}
-            >
-                {isProcessing && <p>Processing new data, please wait...</p>}
-                <button
-                    onClick={startPreprocessing}
-                    disabled={isProcessing}
-                    style={{
-                        padding: "0.5rem 1rem",
-                        borderRadius: "4px",
-                        border: "none",
-                        backgroundColor: "var(--blue)",
-                        color: "white",
-                        cursor: isProcessing ? "not-allowed" : "pointer",
-                        opacity: isProcessing ? 0.7 : 1,
-                        transition: "opacity 0.3s ease",
-                    }}
-                >
-                    {isProcessing ? "Processing..." : "Check for Missing Data"}
-                </button>
-            </motion.div> */}
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -75,8 +52,10 @@ const Dashboard = () => {
                     gap: "1rem",
                 }}
             >
-                <MapCard coordinates={coordinates} onPinClick={handlePinClick} />
-                <GraphCard data={graphData} />
+                {/* <MapCard coordinates={coordinates} onPinClick={handlePinClick} /> */}
+                {/* <GraphCard data={graphData} /> */}
+                <GraphCard sensor={sensor} setHoveredDate={setHoveredDate} />
+                <GraphCardSidebar sensor={sensor} hoveredDate={hoveredDate} />
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -88,8 +67,8 @@ const Dashboard = () => {
                         gap: "1rem",
                     }}
                 >
-                    <BioGraphCard data={graphData} />
-                    <ShannonGraphCard data={graphData} />
+                    {/* <BioGraphCard data={graphData} /> */}
+                    {/* <ShannonGraphCard data={graphData} /> */}
                 </motion.div>
             </motion.div>
         </div>
