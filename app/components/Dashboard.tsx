@@ -30,45 +30,59 @@ const Dashboard = () => {
     const { coordinates, isProcessing, startPreprocessing } = useCoordinates();
     const [graphData, setGraphData] = useState<GraphDataPoint[]>([]);
 
-    const sensor = "titan001"; // Example sensor value
+    const sensor = "titan002"; // Example sensor value
     const [hoveredDate, setHoveredDate] = useState<string | null>(null);
 
     const handlePinClick = async (coord: Coordinate) => {
         console.log("Fetching data for:", coord);
         const fetchedData = await fetchLocalDataForCoordinates(coord);
         setGraphData(fetchedData);
-    };    
+    };
     return (
         <div style={{ padding: "1rem", backgroundColor: "var(--background)" }}>
-
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 style={{
                     display: "flex",
-                    flexDirection: "column",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignContent: "center",
+                    width: "100%",
                     gap: "1rem",
                 }}
+                className="responsive-container"
             >
-                {/* <MapCard coordinates={coordinates} onPinClick={handlePinClick} /> */}
-                {/* <GraphCard data={graphData} /> */}
-                <GraphCard sensor={sensor} setHoveredDate={setHoveredDate} />
-                <GraphCardSidebar sensor={sensor} hoveredDate={hoveredDate} />
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
                     style={{
                         display: "flex",
-                        flexDirection: "row",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                        flex: "1",
+                        flexDirection: "column",
                         gap: "1rem",
                     }}
                 >
-                    {/* <BioGraphCard data={graphData} /> */}
-                    {/* <ShannonGraphCard data={graphData} /> */}
+                    <GraphCard sensor={sensor} setHoveredDate={setHoveredDate} />
+                    <GraphCardSidebar sensor={sensor} hoveredDate={hoveredDate || "20241109"} />
+                    <BioGraphCard data={graphData} />
+                    <ShannonGraphCard data={graphData} />
+                </motion.div>
+                {/* SidebarColumn */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "1rem",
+                    }}
+                    className={"sidecolumn"}
+                >
+                    <MapCard coordinates={coordinates} onPinClick={handlePinClick} />
                 </motion.div>
             </motion.div>
         </div>

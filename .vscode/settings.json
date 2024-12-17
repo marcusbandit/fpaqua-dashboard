@@ -1,0 +1,11 @@
+{
+    "vscode-pets.petSize": "medium",
+    "vscode-pets.position": "explorer",
+    "vscode-pets.theme": "none",
+    "vscode-pets.throwBallWithMouse": true,
+    "vscode-pets.petColor": "paint brown",
+    "powermode.enabled": true,
+    "powermode.shake.intensity": 1,
+    "powermode.explosions.maxExplosions": 2,
+    "powermode.combo.location": "statusbar"
+}

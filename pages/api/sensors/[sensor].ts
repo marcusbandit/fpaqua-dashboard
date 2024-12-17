@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     return match ? match[1] : null;
                 })
                 .filter(Boolean) // Remove invalid matches
-                .sort((a, b) => b.localeCompare(a)) // Sort descending
+                .sort((b, a) => b.localeCompare(a)) // Sort descending
                 .slice(-14); // Get newest 14 dates
 
             res.status(200).json(dates);

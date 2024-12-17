@@ -8,9 +8,9 @@ interface SidebarProps {
 
 const LocationSidebar: React.FC<SidebarProps> = ({ coordinates, onLocationClick }) => {
     return (
-        <div style={{ flex: "1", width: "300px", minWidth: "300px", backgroundColor: "var(--surface0)", padding: "1rem", paddingRight: "0rem", borderRadius: "8px" }}>
+        <div style={{ width: "100%", height: "fit-content", maxHeight: "400px", backgroundColor: "var(--surface0)", padding: "1rem", borderRadius: "8px" }}>
             <h2 style={{ marginBottom: "1rem", fontSize: "1.5rem", fontWeight: "bold" }}>Locations:</h2>
-            <ul style={{ listStyle: "none", padding: 0 }}>
+            <ul style={{ height: "fit-content", listStyle: "none", padding: 0 }}>
                 {coordinates.map((coord, index) => (
                     <li
                         key={index}

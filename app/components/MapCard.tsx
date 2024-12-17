@@ -93,10 +93,8 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
             style={{
                 display: "flex",
                 flex: 1,
-                flexDirection: "row",
-                backgroundColor: "var(--surface0)",
-                padding: "1rem",
-                borderRadius: "var(--radius)",
+                flexDirection: "column",
+                gap: "1rem",
                 overflow: "hidden",
             }}
         >
@@ -105,9 +103,9 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
                     borderRadius: "var(--radius)",
                     overflow: "hidden",
                     width: "100%",
-                    minHeight: "30rem",
+                    minHeight: "20rem",
                     // maxWidth: "30rem",
-                    // aspectRatio: "1 / 1",
+                    aspectRatio: "1 / 1",
                 }}
             >
                 <Map
