@@ -1,9 +1,9 @@
+import { useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { useState } from "react";
+import { Coordinate, GraphDataPoint } from "../types";
 import MapCard from "./MapCard";
 import GraphCard from "./GraphCard";
-import useCoordinates from "../hooks/useCoordinates";
-import { Coordinate, GraphDataPoint } from "../types";
 import BioGraphCard from "./BioGraphCard";
 import ShannonGraphCard from "./ShannonGraphCard";
 import GraphCardSidebar from "./GraphCardSidebar";
@@ -27,10 +27,10 @@ export async function fetchLocalDataForCoordinates(coord: Coordinate): Promise<G
 }
 
 const Dashboard = () => {
-    const { coordinates, isProcessing, startPreprocessing } = useCoordinates();
-    const [graphData, setGraphData] = useState<GraphDataPoint[]>([]);
+    const searchParams = useSearchParams();
+    const sensor = searchParams?.get("sensor") ?? ""; // Ensure 'sensor' is always a string
 
-    const sensor = "titan002"; // Example sensor value
+    const [graphData, setGraphData] = useState<GraphDataPoint[]>([]);
     const [hoveredDate, setHoveredDate] = useState<string | null>(null);
 
     const handlePinClick = async (coord: Coordinate) => {
@@ -38,6 +38,7 @@ const Dashboard = () => {
         const fetchedData = await fetchLocalDataForCoordinates(coord);
         setGraphData(fetchedData);
     };
+
     return (
         <div style={{ padding: "1rem", backgroundColor: "var(--background)" }}>
             <motion.div
@@ -82,7 +83,7 @@ const Dashboard = () => {
                     }}
                     className={"sidecolumn"}
                 >
-                    <MapCard coordinates={coordinates} onPinClick={handlePinClick} />
+                    <MapCard />
                 </motion.div>
             </motion.div>
         </div>

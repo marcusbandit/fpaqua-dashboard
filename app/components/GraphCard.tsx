@@ -16,8 +16,6 @@ const GraphCard: React.FC<GraphCardProps> = ({ sensor, setHoveredDate }) => {
             try {
                 // Step 1: Fetch the list of recent dates from the API
                 const dateResponse = await fetch(`/api/sensors/${sensor}`);
-                console.log("Date response:");
-                console.log(dateResponse);
                 const recentDates = await dateResponse.json(); // ["2024-12-04", "2024-12-03", ...]
 
                 if (!Array.isArray(recentDates)) {

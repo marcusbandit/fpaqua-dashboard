@@ -1,19 +1,59 @@
 import { Map, Marker, ZoomControl } from "pigeon-maps";
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import LocationSidebar from "./LocationSidebar";
 import { Coordinate } from "../types";
 
-interface MapCardProps {
-    coordinates: Coordinate[]; // Array of coordinates for the map
-    onPinClick: (coord: Coordinate) => void;
-}
-
-const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
-    const [center, setCenter] = useState<[number, number]>(coordinates.length > 0 ? [coordinates[0].lat, coordinates[0].lng] : [0, 0]);
-    const [zoom, setZoom] = useState<number>(coordinates.length === 1 ? 10 : 5);
+const MapCard: React.FC = () => {
+    const [coordinates, setCoordinates] = useState<Coordinate[]>([]); // Dynamic coordinates from API
+    const [center, setCenter] = useState<[number, number]>([0, 0]);
+    const [zoom, setZoom] = useState<number>(3);
     const [hoveredPinIndex, setHoveredPinIndex] = useState<number | null>(null);
-    const [selectedPinIndex, setSelectedPinIndex] = useState<number | null>(0);
+    const [selectedPinIndex, setSelectedPinIndex] = useState<number | null>(null);
     const animationRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        const fetchSensorsWithCoordinates = async () => {
+            try {
+                // Step 1: Fetch the list of sensors
+                const response = await fetch("/api/sensors?mode=sensors");
+                if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+
+                const sensors: string[] = await response.json();
+
+                // Step 2: Fetch coordinates for each sensor
+                const promises = sensors.map(async (sensor) => {
+                    const coordResponse = await fetch(
+                        `/api/sensors/${sensor}?date=newest&columns=longitude,latitude`
+                    );
+                    const coordData = await coordResponse.json();
+
+                    if (coordData?.length > 0) {
+                        return {
+                            name: sensor,
+                            lat: coordData[0].latitude,
+                            lng: coordData[0].longitude,
+                        };
+                    }
+
+                    return null;
+                });
+
+                const resolvedCoordinates = (await Promise.all(promises)).filter(Boolean) as Coordinate[];
+
+                // Update state with valid coordinates
+                setCoordinates(resolvedCoordinates);
+
+                // Set initial map center if coordinates exist
+                if (resolvedCoordinates.length > 0) {
+                    setCenter([resolvedCoordinates[0].lat, resolvedCoordinates[0].lng]);
+                }
+            } catch (err) {
+                console.error("Error fetching sensor coordinates:", err);
+            }
+        };
+
+        fetchSensorsWithCoordinates();
+    }, []);
 
     const stopAnimation = () => {
         if (animationRef.current !== null) {
@@ -23,88 +63,21 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
     };
 
     const handlePinClick = (coord: Coordinate) => {
-        const targetCenter: [number, number] = [coord.lat, coord.lng];
-        const targetZoom = 5; // Desired zoom level
-
-        // Select the pin
-        const selectedIndex = coordinates.slice().reverse().findIndex(c => c.lat === coord.lat && c.lng === coord.lng);
-        setSelectedPinIndex(selectedIndex);
-
-        // Check distance from current center to target center
-        const distanceThreshold = 5; // Define threshold for snapping
-        const distance = Math.sqrt(
-            Math.pow(targetCenter[0] - center[0], 2) + Math.pow(targetCenter[1] - center[1], 2)
+        setCenter([coord.lat, coord.lng]);
+        setZoom(5); // Zoom into the clicked pin
+        setSelectedPinIndex(
+            coordinates.findIndex((c) => c.lat === coord.lat && c.lng === coord.lng)
         );
-
-        if (distance > distanceThreshold) {
-            // Snap to target position and reset animation state
-            setCenter(targetCenter);
-            setZoom(3); // Initial zoom before animation
-            setTimeout(() => animateTo(targetCenter, targetZoom), 0);
-        } else {
-            animateTo(targetCenter, targetZoom);
-        }
-
-        onPinClick(coord);
-    };
-
-    const animateTo = (targetCenter: [number, number], targetZoom: number, speed: number = 5) => {
-        stopAnimation();
-
-        let currentCenter: [number, number] = [...targetCenter];
-        let currentZoom = zoom;
-
-        const step = () => {
-            const dt = 1 / 60; // Assuming 60 FPS for smooth animation
-
-            // Update latitude and longitude
-            currentCenter[0] += (targetCenter[0] - currentCenter[0]) * (1.0 - Math.exp(-speed * dt));
-            currentCenter[1] += (targetCenter[1] - currentCenter[1]) * (1.0 - Math.exp(-speed * dt));
-
-            // Update zoom
-            currentZoom += (targetZoom - currentZoom) * (1.0 - Math.exp(-speed * dt));
-
-            // Apply new values to map
-            setCenter([currentCenter[0], currentCenter[1]]);
-            setZoom(currentZoom);
-
-            // Check stopping condition
-            const latDiff = Math.abs(targetCenter[0] - currentCenter[0]);
-            const lngDiff = Math.abs(targetCenter[1] - currentCenter[1]);
-            const zoomDiff = Math.abs(targetZoom - currentZoom);
-
-            const threshold = 0.00001; // Fine threshold for precision
-            if (latDiff > threshold || lngDiff > threshold || zoomDiff > 0.01) {
-                animationRef.current = requestAnimationFrame(step);
-            } else {
-                // Snap to the target to ensure exact positioning
-                setCenter(targetCenter);
-                setZoom(targetZoom);
-                animationRef.current = null;
-            }
-        };
-
-        // Start the animation loop
-        animationRef.current = requestAnimationFrame(step);
     };
 
     return (
-        <div
-            style={{
-                display: "flex",
-                flex: 1,
-                flexDirection: "column",
-                gap: "1rem",
-                overflow: "hidden",
-            }}
-        >
+        <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: "1rem", overflow: "hidden" }}>
             <div
                 style={{
                     borderRadius: "var(--radius)",
                     overflow: "hidden",
                     width: "100%",
                     minHeight: "20rem",
-                    // maxWidth: "30rem",
                     aspectRatio: "1 / 1",
                 }}
             >
@@ -112,61 +85,49 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
                     center={center}
                     zoom={zoom}
                     onBoundsChanged={({ center, zoom }) => {
-                        stopAnimation(); // Stop animation when the map is dragged
+                        stopAnimation();
                         setCenter(center);
                         setZoom(zoom);
                     }}
                 >
                     <ZoomControl />
-                    {coordinates.slice().reverse().map((coord: Coordinate, index: number) => (
+                    {coordinates.map((coord: Coordinate, index: number) => (
                         <Marker
                             key={index}
-                            anchor={[coord.lat, coord.lng]} // Position directly on the map coordinates
-                            onClick={() => handlePinClick(coord)} // Zoom into the pin on click
+                            anchor={[coord.lat, coord.lng]}
+                            onClick={() => handlePinClick(coord)}
                         >
-                            {/* Pin Container */}
                             <div
                                 onMouseEnter={() => setHoveredPinIndex(index)}
                                 onMouseLeave={() => setHoveredPinIndex(null)}
                                 style={{
                                     position: "relative",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                    width: "30px",
-                                    height: "30px",
-                                    pointerEvents: "auto",
-                                    transform: hoveredPinIndex === index || selectedPinIndex === index ? "scale(1.25)" : "scale(1)",
-                                    transformOrigin: "bottom center",
+                                    transform:
+                                        hoveredPinIndex === index || selectedPinIndex === index
+                                            ? "scale(1.25)"
+                                            : "scale(1)",
                                     transition: "transform 0.2s ease",
                                     cursor: "pointer",
                                 }}
                             >
-                                {/* SVG Pin */}
                                 <img
                                     src="/map_pin.svg"
                                     alt="Pin"
-                                    style={{
-                                        width: "100%",
-                                        height: "100%",
-                                    }}
+                                    style={{ width: "30px", height: "30px" }}
                                 />
-                                {/* Hover Label */}
                                 {(hoveredPinIndex === index || selectedPinIndex === index) && (
                                     <div
                                         style={{
                                             position: "absolute",
-                                            bottom: "40px", // Adjusted to appear above the pin
+                                            bottom: "40px",
                                             backgroundColor: "var(--surface1)",
                                             padding: "5px 10px",
                                             borderRadius: "4px",
-                                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
                                             fontSize: "12px",
                                             whiteSpace: "nowrap",
-                                            zIndex: 9999, // Ensure it's on top of everything else
                                         }}
                                     >
-                                        {coord.name || `${coord.lat}, ${coord.lng}`}
+                                        {coord.name}
                                     </div>
                                 )}
                             </div>
@@ -174,7 +135,7 @@ const MapCard: React.FC<MapCardProps> = ({ coordinates, onPinClick }) => {
                     ))}
                 </Map>
             </div>
-            <LocationSidebar coordinates={coordinates} onLocationClick={(coord: Coordinate) => handlePinClick(coord)} />
+            <LocationSidebar />
         </div>
     );
 };
