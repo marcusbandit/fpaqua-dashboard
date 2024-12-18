@@ -6,7 +6,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 // Open SQLite database
 async function openDB() {
     return open({
-        filename: '/mnt/datamerd01/database/sensors.db', // Update this path
+        // filename: '/mnt/datamerd01/database/sensors.db',
+        filename: "/home/bandit/workspaces/projects/data/sensors.db",
         driver: sqlite3.Database,
     });
 }
@@ -24,9 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         if (!date || date === "newest") {
             // *** Case 1: No date or 'newest' - Return the newest date ***
-            const tableNames = await db.all(
-                `SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '${sensor}_%'`
-            );
+            const tableNames = await db.all(`SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '${sensor}_%'`);
 
             // Extract and sort dates (newest first)
             const dates = tableNames
@@ -43,13 +42,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 const tableName = `${sensor}_${newestDate}`;
 
                 const selectedColumns = columns
-                    ? (columns as string).split(",").map((col) => col.trim()).join(", ")
+                    ? (columns as string)
+                          .split(",")
+                          .map((col) => col.trim())
+                          .join(", ")
                     : "prediction_category, SUM(amount) AS total"; // Default columns
 
                 try {
                     const rows = await db.all(
-                        `SELECT ${selectedColumns} 
-                         FROM ${tableName} 
+                        `SELECT ${selectedColumns}
+                         FROM ${tableName}
                          GROUP BY prediction_category`
                     );
 
@@ -80,13 +82,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             // Determine which columns to select
             const selectedColumns = columns
-                ? (columns as string).split(",").map((col) => col.trim()).join(", ")
+                ? (columns as string)
+                      .split(",")
+                      .map((col) => col.trim())
+                      .join(", ")
                 : "prediction_category, SUM(amount) AS total"; // Default columns
 
             try {
                 const rows = await db.all(
-                    `SELECT ${selectedColumns} 
-                     FROM ${tableName} 
+                    `SELECT ${selectedColumns}
+                     FROM ${tableName}
                      GROUP BY prediction_category`
                 );
 

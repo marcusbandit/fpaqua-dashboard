@@ -15,7 +15,7 @@ function getWeekKey(dateStr: string) {
     tempDate.setHours(0, 0, 0, 0);
     tempDate.setDate(tempDate.getDate() + 4 - (tempDate.getDay() || 7));
     const yearStart = new Date(tempDate.getFullYear(), 0, 1);
-    const weekNo = Math.ceil((((tempDate.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    const weekNo = Math.ceil(((tempDate.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 
     const year = tempDate.getFullYear();
     const weekKey = `${year}-W${String(weekNo).padStart(2, "0")}`;
@@ -36,10 +36,7 @@ const ShannonGraphCard: React.FC<ShannonGraphCardProps> = ({ data }) => {
             acc[weekKey] = { categories: new Map<string, number>(), amountSum: 0 };
         }
         const weekData = acc[weekKey];
-        weekData.categories.set(
-            prediction_category,
-            (weekData.categories.get(prediction_category) || 0) + amount
-        );
+        weekData.categories.set(prediction_category, (weekData.categories.get(prediction_category) || 0) + amount);
         weekData.amountSum += amount;
 
         return acc;
@@ -76,7 +73,7 @@ const ShannonGraphCard: React.FC<ShannonGraphCardProps> = ({ data }) => {
                     color: resolveCssVariable("--blue"),
                 },
             },
-            formatter: (params: any) => {
+            formatter: (params: unknown) => {
                 if (!Array.isArray(params)) return "";
                 const { name, value } = params[0];
                 return `Week: ${name}<br>Shannon Index: ${value.toFixed(2)}`;
@@ -123,7 +120,6 @@ const ShannonGraphCard: React.FC<ShannonGraphCardProps> = ({ data }) => {
             containLabel: true,
         },
     };
-    
 
     return (
         <div

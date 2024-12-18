@@ -2,6 +2,7 @@ import { Map, Marker, ZoomControl } from "pigeon-maps";
 import { useState, useEffect, useRef } from "react";
 import LocationSidebar from "./LocationSidebar";
 import { Coordinate } from "../types";
+import Image from "next/image";
 
 const MapCard: React.FC = () => {
     const [coordinates, setCoordinates] = useState<Coordinate[]>([]); // Dynamic coordinates from API
@@ -22,9 +23,7 @@ const MapCard: React.FC = () => {
 
                 // Step 2: Fetch coordinates for each sensor
                 const promises = sensors.map(async (sensor) => {
-                    const coordResponse = await fetch(
-                        `/api/sensors/${sensor}?date=newest&columns=longitude,latitude`
-                    );
+                    const coordResponse = await fetch(`/api/sensors/${sensor}?date=newest&columns=longitude,latitude`);
                     const coordData = await coordResponse.json();
 
                     if (coordData?.length > 0) {
@@ -65,9 +64,7 @@ const MapCard: React.FC = () => {
     const handlePinClick = (coord: Coordinate) => {
         setCenter([coord.lat, coord.lng]);
         setZoom(5); // Zoom into the clicked pin
-        setSelectedPinIndex(
-            coordinates.findIndex((c) => c.lat === coord.lat && c.lng === coord.lng)
-        );
+        setSelectedPinIndex(coordinates.findIndex((c) => c.lat === coord.lat && c.lng === coord.lng));
     };
 
     return (
@@ -92,29 +89,18 @@ const MapCard: React.FC = () => {
                 >
                     <ZoomControl />
                     {coordinates.map((coord: Coordinate, index: number) => (
-                        <Marker
-                            key={index}
-                            anchor={[coord.lat, coord.lng]}
-                            onClick={() => handlePinClick(coord)}
-                        >
+                        <Marker key={index} anchor={[coord.lat, coord.lng]} onClick={() => handlePinClick(coord)}>
                             <div
                                 onMouseEnter={() => setHoveredPinIndex(index)}
                                 onMouseLeave={() => setHoveredPinIndex(null)}
                                 style={{
                                     position: "relative",
-                                    transform:
-                                        hoveredPinIndex === index || selectedPinIndex === index
-                                            ? "scale(1.25)"
-                                            : "scale(1)",
+                                    transform: hoveredPinIndex === index || selectedPinIndex === index ? "scale(1.25)" : "scale(1)",
                                     transition: "transform 0.2s ease",
                                     cursor: "pointer",
                                 }}
                             >
-                                <img
-                                    src="/map_pin.svg"
-                                    alt="Pin"
-                                    style={{ width: "30px", height: "30px" }}
-                                />
+                                <Image src="/map_pin.svg" alt="Pin" width={30} height={30} />
                                 {(hoveredPinIndex === index || selectedPinIndex === index) && (
                                     <div
                                         style={{

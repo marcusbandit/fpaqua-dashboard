@@ -5,7 +5,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 // Open SQLite database
 async function openDB() {
     return open({
-        filename: '/mnt/datamerd01/database/sensors.db',
+        // filename: '/mnt/datamerd01/database/sensors.db',
+        filename: "/home/bandit/workspaces/projects/data/sensors.db",
         driver: sqlite3.Database,
     });
 }
@@ -19,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (mode === "sensors") {
             // Fetch list of tables in the database
             const tableNames = await db.all(`SELECT name FROM sqlite_master WHERE type='table'`);
-            
+
             const sensorSet = new Set<string>();
 
             // Extract unique sensor names and exclude "sqlite"

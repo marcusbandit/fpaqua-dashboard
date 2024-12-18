@@ -1,18 +1,42 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react";
 import { resolveCssVariable } from "../utils/cssUtils";
-import { GraphDataPoint } from "../types";
 
-interface GraphCardProps {
-    data: GraphDataPoint[];
+interface BioGraphCardProps {
+    sensor: string;
 }
 
-const BioGraphCard: React.FC<GraphCardProps> = ({ data }) => {
-    if (!data || data.length === 0) {
-        return <div>No data available. Click on a location to load data.</div>;
-    }
+const BioGraphCard: React.FC<BioGraphCardProps> = ({ sensor }) => {
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // Group data by date
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch biodiversity data for the given sensor
+                const response = await fetch(`/api/sensors/${sensor}`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch biodiversity data");
+                }
+                const result = await response.json();
+                setData(result);
+            } catch (err: any) {
+                setError(err.message || "Unknown error");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [sensor]);
+    console.log(data);
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+    if (!data || data.length === 0) return <div>No data available.</div>;
+
+    // Group and preprocess the fetched data
     const groupedData = data.reduce((acc, { date, amount, prediction_category }) => {
         if (!acc[date]) {
             acc[date] = { categories: new Set(), amountSum: 0 };
@@ -22,17 +46,14 @@ const BioGraphCard: React.FC<GraphCardProps> = ({ data }) => {
         return acc;
     }, {} as Record<string, { categories: Set<string>; amountSum: number }>);
 
-    // Extract processed data for the graph
     const processedData = Object.entries(groupedData).map(([date, { categories, amountSum }]) => ({
         date,
         categoryCount: categories.size,
         amountSum,
     }));
 
-    // Sort data by date for consistent display
     processedData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    // Scatter plot data
     const scatterData = processedData.map(({ categoryCount, amountSum, date }) => ({
         value: [categoryCount, amountSum],
         name: date,
@@ -40,11 +61,11 @@ const BioGraphCard: React.FC<GraphCardProps> = ({ data }) => {
 
     const chartOptions = {
         tooltip: {
-            trigger: "axis", // Snap tooltip to the nearest axis point
+            trigger: "axis",
             axisPointer: { type: "cross" },
             formatter: (params: any) => {
                 if (!Array.isArray(params)) return "";
-                const { name, value } = params[0]; // Use the first series for tooltip
+                const { name, value } = params[0];
                 return `Date: ${name}<br>Species Richness: ${Math.round(value[0])}<br>Species Abundance: ${Math.round(value[1])}`;
             },
         },
@@ -72,7 +93,7 @@ const BioGraphCard: React.FC<GraphCardProps> = ({ data }) => {
                 },
                 emphasis: {
                     itemStyle: {
-                        color: "peachpuff", // Highlight color for hovered point
+                        color: "peachpuff",
                         borderColor: "black",
                         borderWidth: 1,
                     },
@@ -87,7 +108,6 @@ const BioGraphCard: React.FC<GraphCardProps> = ({ data }) => {
             containLabel: true,
         },
     };
-    
 
     return (
         <div

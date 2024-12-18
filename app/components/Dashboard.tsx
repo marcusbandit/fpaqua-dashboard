@@ -1,43 +1,17 @@
 import { useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { Coordinate, GraphDataPoint } from "../types";
+import { GraphDataPoint } from "../types";
 import MapCard from "./MapCard";
 import GraphCard from "./GraphCard";
 import BioGraphCard from "./BioGraphCard";
-import ShannonGraphCard from "./ShannonGraphCard";
+// import ShannonGraphCard from "./ShannonGraphCard";
 import GraphCardSidebar from "./GraphCardSidebar";
-
-export async function fetchLocalDataForCoordinates(coord: Coordinate): Promise<GraphDataPoint[]> {
-    try {
-        const date = new Date().toISOString().split("T")[0]; // Use current date or pass from UI
-        const response = await fetch(`/api/get-data?lat=${coord.lat}&lng=${coord.lng}`);
-
-        if (!response.ok) {
-            console.error("Error fetching data from API:", response.statusText);
-            return [];
-        }
-
-        const data = await response.json();
-        return data; // Parsed data from the API
-    } catch (error) {
-        console.error("Error in fetchLocalDataForCoordinates:", error);
-        return [];
-    }
-}
 
 const Dashboard = () => {
     const searchParams = useSearchParams();
     const sensor = searchParams?.get("sensor") ?? ""; // Ensure 'sensor' is always a string
-
-    const [graphData, setGraphData] = useState<GraphDataPoint[]>([]);
     const [hoveredDate, setHoveredDate] = useState<string | null>(null);
-
-    const handlePinClick = async (coord: Coordinate) => {
-        console.log("Fetching data for:", coord);
-        const fetchedData = await fetchLocalDataForCoordinates(coord);
-        setGraphData(fetchedData);
-    };
 
     return (
         <div style={{ padding: "1rem", backgroundColor: "var(--background)" }}>
@@ -68,8 +42,8 @@ const Dashboard = () => {
                 >
                     <GraphCard sensor={sensor} setHoveredDate={setHoveredDate} />
                     <GraphCardSidebar sensor={sensor} hoveredDate={hoveredDate || "20241109"} />
-                    <BioGraphCard data={graphData} />
-                    <ShannonGraphCard data={graphData} />
+                    <BioGraphCard sensor={sensor} />
+                    {/* <ShannonGraphCard data={graphData} /> */}
                 </motion.div>
                 {/* SidebarColumn */}
                 <motion.div
